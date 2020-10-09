@@ -12,42 +12,42 @@ contract ConstantsValue {
     /**
      * @dev return history variable name.
      */
-    function getHistoryName() public view returns (string memory) {
+    function getHistoryName() internal view returns (string memory) {
         return HISTORY;
     }
 
     /**
      * @dev return score variable name.
      */
-    function getScoreName() public view returns (string memory) {
+    function getScoreName() internal view returns (string memory) {
         return SCORE;
     }
 
     /**
      * @dev return member variable name.
      */
-    function getMemberName() public view returns (string memory) {
+    function getMemberName() internal view returns (string memory) {
         return MEMBER;
     }
 
     /**
      * @dev return value variable name.
      */
-    function getValueName() public view returns (string memory) {
+    function getValueName() internal view returns (string memory) {
         return VALUE;
     }
 
     /**
      * @dev return access key variable name.
      */
-    function getAccessKey() public view returns (string memory) {
+    function getAccessKey() internal view returns (string memory) {
         return ACCESS_KEY;
     }
 
     /**
      * @dev return application variable name.
      */
-    function getApplicationName() public view returns (string memory) {
+    function getApplicationName() internal view returns (string memory) {
         return KEY_APPLICATION;
     }
 
@@ -58,7 +58,7 @@ contract ConstantsValue {
      * @return bytes32 key
      */
     function getKey(address user, string memory variableName)
-        public
+        internal
         view
         returns (bytes32)
     {
@@ -79,7 +79,7 @@ contract ConstantsValue {
         address user1,
         address user2,
         string memory variableName
-    ) public view returns (bytes32) {
+    ) internal view returns (bytes32) {
         bytes32 key = keccak256(
             abi.encodePacked(user1, user2, variableName, getApplicationName())
         );
@@ -97,9 +97,27 @@ contract ConstantsValue {
         address user,
         string memory variableName,
         string memory typeName
-    ) public view returns (bytes32) {
+    ) internal view returns (bytes32) {
         bytes32 key = keccak256(
             abi.encodePacked(user, typeName, variableName, getApplicationName())
+        );
+        return key;
+    }
+
+    function getKey(
+        address user,
+        string memory code,
+        string memory keyOrder,
+        string memory variableName
+    ) internal view returns (bytes32) {
+        bytes32 key = keccak256(
+            abi.encodePacked(
+                user,
+                code,
+                keyOrder,
+                variableName,
+                getApplicationName()
+            )
         );
         return key;
     }
