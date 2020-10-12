@@ -13,6 +13,7 @@ contract UserManage is ConstantsValue {
         bytes32 code;
         bytes32 fullName;
         bytes32 email;
+        uint256 role;
     }
 
     event AddMember(
@@ -61,10 +62,29 @@ contract UserManage is ConstantsValue {
         _keyManage = KeyManage(_keyManageAddress);
     }
 
-    modifier canAccess() {
-        bool isAdmin = admin[tx.origin];
-        if (!isAdmin) revert();
-        _;
+    function getUserCode(address user) public view returns (string memory) {
+        bytes32 code = userInfo[user].code;
+        return bytes32ToString(code);
+    }
+
+    function getUserInfo(address user)
+        public
+        view
+        returns (
+            address addr,
+            string memory code,
+            string memory fullName,
+            string memory email,
+            uint256 role
+        )
+    {
+        return (
+            userInfo[user].addr,
+            bytes32ToString(userInfo[user].code),
+            bytes32ToString(userInfo[user].fullName),
+            bytes32ToString(userInfo[user].email),
+            userInfo[user].role
+        );
     }
 
     function hasRole(
@@ -84,9 +104,12 @@ contract UserManage is ConstantsValue {
         string memory email
     ) public {
         require(hasRole(user, "ADMIN", 1));
+
+        userInfo[user].addr = user;
         userInfo[user].fullName = stringToBytes32(fullName);
         userInfo[user].email = stringToBytes32(email);
         userInfo[user].code = stringToBytes32(code);
+        userInfo[user].role = 2;
 
         _keyManage.addRole(user, code, 2);
 
@@ -116,6 +139,7 @@ contract UserManage is ConstantsValue {
         userInfo[user].addr = user;
         userInfo[user].email = stringToBytes32(email);
         userInfo[user].fullName = stringToBytes32(fullName);
+        userInfo[user].role = role;
 
         _keyManage.addRole(user, code, role);
 
@@ -146,10 +170,13 @@ contract UserManage is ConstantsValue {
     ) public {
         string memory code = bytes32ToString(userInfo[tx.origin].code);
 
-        require(userInfo[tx.origin].code == userInfo[user].code);
+        if (hasRole(msg.sender, "ADMIN", 1)) {
+            require(userInfo[tx.origin].code == userInfo[user].code);
 
-        require(hasRole(user, code, 5));
-        require(hasRole(tx.origin, code, 3));
+            require(hasRole(user, code, 5));
+            require(hasRole(tx.origin, code, 3));
+        }
+
         bytes32 scoreKey = getKey(user, code, getScoreName());
 
         uint256 currentScore = Database.getUintValue(scoreKey);
@@ -169,9 +196,12 @@ contract UserManage is ConstantsValue {
     ) public {
         string memory code = bytes32ToString(userInfo[tx.origin].code);
 
-        require(userInfo[tx.origin].code == userInfo[user].code);
-        require(hasRole(user, code, 5));
-        require(hasRole(tx.origin, code, 3));
+        if (hasRole(msg.sender, "ADMIN", 1)) {
+            require(userInfo[tx.origin].code == userInfo[user].code);
+
+            require(hasRole(user, code, 5));
+            require(hasRole(tx.origin, code, 3));
+        }
 
         bytes32 historyKey = getKey(user, code, getHistoryName());
         bytes32 historyKeyWithOrder = getKey(

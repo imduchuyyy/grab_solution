@@ -8,12 +8,12 @@ contract KeyManage is ConstantsValue {
     constructor(address _EternalStorageAddress) public {
         Database = EternalStorage(_EternalStorageAddress);
 
-        bytes32 _key = getKey(msg.sender, "ADMIN", getAccessKey());
+        bytes32 _key = getKey(tx.origin, "ADMIN", getAccessKey());
         Database.set(_key, 1);
     }
 
     modifier canAccess() {
-        bool access = keyHasRole(msg.sender, "ADMIN", 1);
+        bool access = keyHasRole(tx.origin, "ADMIN", 1);
         if (!access) revert();
         _;
     }
